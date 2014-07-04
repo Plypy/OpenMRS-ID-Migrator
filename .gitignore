@@ -1,3 +1,7 @@
+# Data Files #
+groups.json
+users.json
+
 # Logfiles #
 ############
 nohup.out

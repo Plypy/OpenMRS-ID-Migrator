@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/Plypy/OpenMRS-ID-Migrator",
   "dependencies": {
-    "lodash": "^2.4.1"
+    "lodash": "^2.4.1",
+    "async": "^0.9.0"
   }
 }
