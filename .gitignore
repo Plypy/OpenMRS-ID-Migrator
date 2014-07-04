@@ -1,0 +1,28 @@
+# Logfiles #
+############
+nohup.out
+
+# Node modules #
+###################
+node_modules
+
+# Local Dev Resources #
+#######################
+*.sublime-*
+.ldaprc
+*.todo
+
+# OS generated files #
+######################
+.DS_Store*
+ehthumbs.db
+Icon?
+Thumbs.db
+
+# Testing files #
+#################
+santa-tunnel.sh
+conf-controller.js
+.sass-cache
+resource/stylesheets/*
+*.ldif

@@ -1,0 +1,22 @@
+{
+  "name": "Migrator",
+  "version": "0.0.0",
+  "description": "Simple migrator for OpenMRS ID Dashboard 2.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/Plypy/OpenMRS-ID-Migrator.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Plypy/OpenMRS-ID-Migrator/issues"
+  },
+  "homepage": "https://github.com/Plypy/OpenMRS-ID-Migrator",
+  "dependencies": {
+    "lodash": "^2.4.1"
+  }
+}
