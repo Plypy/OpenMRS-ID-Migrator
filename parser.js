@@ -16,7 +16,8 @@ exports = module.exports = function (map, callback) {
   var curObj = {};
 
   rl.on('line', function (data) {
-      // a new data;
+    // a new data;
+    data = data.trim();
     if (_.isEmpty(data)) {
       if (_.isEmpty(curObj)) {
         return;
