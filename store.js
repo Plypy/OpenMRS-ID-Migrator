@@ -1,6 +1,7 @@
 var async = require('async');
 var _ = require('lodash');
 var path =require('path');
+var fs = require('fs');
 
 var dir = path.join(__dirname, './common-mock.js');
 global.__commonModule = dir;
@@ -14,12 +15,12 @@ var userList = require('./users.json').objList;
 // store groupnames and its member names to query
 var groups = [];
 
-if (_.isEmpty(groupList)) {
+if (_.isUndefined(groupList)) {
   console.error('Cannot find groups.json!');
   process.exit();
 }
 
-if (_.isEmpty(userList)) {
+if (_.isUndefined(userList)) {
   console.error('Cannot find users.json!');
   process.exit();
 }
@@ -33,9 +34,9 @@ var extract = function(data) {
 var store = function (groupInfo) {
   var ret = {};
   ret.name = groupInfo.groupName;
-  ret.member = new Set();
+  ret.member = {};
   _.forEach(groupInfo.member, function (data) {
-    ret.member.add(extract(data));
+    ret.member[extract(data)] = true;
   });
   return ret;
 };
@@ -43,7 +44,7 @@ var store = function (groupInfo) {
 var getGroups = function (username) {
   var ret = [];
   _.forEach(groups, function (group) {
-    if (group.member.has(username)) {
+    if (group.member[username]) {
       ret.push(group.name);
     }
   });
@@ -56,6 +57,7 @@ var addGroups = function(next) {
     var groupInfo = _.cloneDeep(item);
     groups.push(store(groupInfo));
     groupInfo.member = [];
+    groupInfo.inLDAP = true;
     var group = new Group(groupInfo);
     group.save(callback);
   },
@@ -70,10 +72,57 @@ var addGroups = function(next) {
   });
 };
 
+var checkUsers = function (next) {
+  var count = {};
+  var addToMap = function (mail) {
+    if (_.isArray(mail)) {
+      _.forEach(mail, function (item) {
+        addToMap(item);
+      });
+      return;
+    }
+    if (!count[mail]) {
+      count[mail] = 1;
+      return;
+    }
+    ++count[mail];
+  };
+
+  // preparation
+  _.forEach(userList, function (user) {
+    user.emailList = [user.primaryEmail];
+    if (user.secondaryEmail) {
+      if (!_.isArray(user.secondaryEmail)) {
+        user.emailList.push(user.secondaryEmail);
+      } else {
+        user.emailList = _.union(user.emailList,user.secondaryEmail);
+      }
+    }
+
+    addToMap(user.emailList);
+  });
+
+  // mark duplicated users
+  _.forEach(userList, function (user) {
+    _.forEach(user.emailList, function (mail) {
+      if (count[mail] > 1) {
+        user.duplicate = true;
+      }
+    });
+  });
+  return next();
+};
+
+var skipped = [];
 var addUsers = function (next) {
   async.map(userList, function (item, callback) {
     var user = new User(item);
-    user.emailList = [user.primaryEmail];
+    if (item.duplicate) {
+      console.log('Skipping user ' + item.username + ' for duplicated emails.');
+      user.groups = getGroups(user.username);
+      skipped.push(user);
+      return callback();
+    }
     user.inLDAP = true;
     user.locked = false; /// ToDo
     user.createdAt = undefined;
@@ -88,6 +137,14 @@ var addUsers = function (next) {
       console.error(err);
       process.exit();
     }
+    if (!_.isEmpty(skipped)) {
+      var skipObj = {
+        skipped: skipped,
+      };
+      var data = JSON.stringify(skipObj, null, 4);
+      fs.writeFileSync('skipped-users.json', data);
+      console.log('Stored skipped users to "skipped-users.json"');
+    }
     console.log('successfully synced all users');
     return next();
   });
@@ -95,5 +152,8 @@ var addUsers = function (next) {
 
 async.series([
   addGroups,
+  checkUsers,
   addUsers,
-]);
+], function (err) {
+  process.exit();
+});

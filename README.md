@@ -31,14 +31,12 @@ Get groups
 
 #### Parse Data
 
-Parse user
-
     node parse-users.js < users.ldif > users.json
     node parse-groups.js < groups.ldif > groups.json
 
 #### Migrate Data
 
-    node --harmony store.js
+    node store.js
 
 If successful, you should see this, by now.
 ~~~

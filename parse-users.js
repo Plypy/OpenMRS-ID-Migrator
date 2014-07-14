@@ -6,7 +6,8 @@ var MAP = {
   cn: 'firstName',
   sn: 'lastName',
   displayName: 'displayName',
-  mail: 'primaryEmail', // only sync for primaryEmail
+  mail: 'primaryEmail',
+  otherMailbox: 'secondaryEmail',
 };
 
 parser(MAP, function () {
