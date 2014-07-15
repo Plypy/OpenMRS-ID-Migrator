@@ -1,10 +1,6 @@
 var async = require('async');
 var _ = require('lodash');
-var path =require('path');
 var fs = require('fs');
-
-var dir = path.join(__dirname, './common-mock.js');
-global.__commonModule = dir;
 
 require('../new-db');
 
@@ -104,11 +100,20 @@ var checkUsers = function (next) {
 
   // mark duplicated users
   _.forEach(userList, function (user) {
-    _.forEach(user.emailList, function (mail) {
-      if (count[mail] > 1) {
-        user.duplicate = true;
+    for (var i = user.emailList.length-1; i >= 0; --i) {
+      var mail = user.emailList[i];
+      if (count[mail] === 1) {
+        continue;
       }
-    });
+      if (mail === user.primaryEmail) {
+        user.duplicate = true;
+        continue;
+      }
+      if (user.duplicate) {
+        user.emailList.splice(i,1);
+        console.log('Deleteing nonprimary email ' + mail + ' for user ' + user.username);
+      }
+    }
   });
   return next();
 };
@@ -118,7 +123,7 @@ var addUsers = function (next) {
   async.map(userList, function (item, callback) {
     var user = new User(item);
     if (item.duplicate) {
-      console.log('Skipping user ' + item.username + ' for duplicated emails.');
+      console.log('Skipping user ' + item.username + ' for duplicated primaryEmail.');
       user.groups = getGroups(user.username);
       skipped.push(user);
       return callback();
