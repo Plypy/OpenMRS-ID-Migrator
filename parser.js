@@ -63,7 +63,6 @@ exports = module.exports = function (map, callback) {
     var ret = {
       objList: objList,
     };
-    ret = JSON.stringify(ret, null, 4);
-    console.log(ret);
+    callback(null, ret);
   });
 };

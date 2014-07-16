@@ -1,4 +1,5 @@
 var async = require('async');
+var async = require('async');
 var _ = require('lodash');
 var fs = require('fs');
 
@@ -21,21 +22,13 @@ if (_.isUndefined(userList)) {
   process.exit();
 }
 
-var extract = function(data) {
-  var ed = _.indexOf(data, ',');
-  var len = ed-3-1;
-  return data.substr(4,len);
-};
 
 var store = function (groupInfo) {
   var ret = {};
   ret.name = groupInfo.groupName;
   ret.member = {};
-  if (!_.isArray(groupInfo.member)) {
-    groupInfo.member = [groupInfo.member];
-  }
-  _.forEach(groupInfo.member, function (data) {
-    ret.member[extract(data)] = true;
+  _.forEach(groupInfo.member, function(user) {
+    ret.member[user] = true;
   });
   return ret;
 };
@@ -89,19 +82,10 @@ var checkUsers = function (next) {
 
   // preparation
   _.forEach(userList, function (user) {
-    user.emailList = [user.primaryEmail];
-    if (user.secondaryEmail) {
-      if (!_.isArray(user.secondaryEmail)) {
-        user.emailList.push(user.secondaryEmail);
-      } else {
-        user.emailList = _.union(user.emailList,user.secondaryEmail);
-      }
-    }
-
     addToMap(user.emailList);
   });
 
-  // mark duplicated users
+  // delete duplicated nonprimary emails
   _.forEach(userList, function (user) {
     for (var i = user.emailList.length-1; i >= 0; --i) {
       var mail = user.emailList[i];
@@ -109,13 +93,22 @@ var checkUsers = function (next) {
         continue;
       }
       if (mail === user.primaryEmail) {
-        user.duplicate = true;
         continue;
       }
-      if (user.duplicate) {
-        user.emailList.splice(i,1);
-        console.log('Deleteing nonprimary email ' + mail + ' for user ' + user.username);
-      }
+      user.emailList.splice(i,1);
+      console.log('Deleteing duplicated nonprimary email ' + mail + ' for user ' + user.username);
+    }
+  });
+
+  // recount and mark users with duplicated primaryEmail
+  count = {};
+  _.forEach(userList, function (user) {
+    addToMap(user.primaryEmail);
+  });
+  _.forEach(userList, function (user) {
+    var mail = user.primaryEmail;
+    if (count[mail] > 1) {
+      user.duplicate = true;
     }
   });
   return next();
@@ -127,8 +120,10 @@ var addUsers = function (next) {
     var user = new User(item);
     if (item.duplicate) {
       console.log('Skipping user ' + item.username + ' for duplicated primaryEmail.');
-      user.groups = getGroups(user.username);
-      skipped.push(user);
+      var copy = _.cloneDeep(item);
+      delete copy.duplicate;
+      copy.groups = getGroups(user.username);
+      skipped.push(copy);
       return callback();
     }
     user.inLDAP = true;

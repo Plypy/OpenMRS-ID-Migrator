@@ -51,4 +51,17 @@ Then you'd better delete this.
     cd ..
     rm -rf Migrator
 
+# Strategy to Erase Duplicate Emails
+
+For some reasons, there are some old accounts with duplicate emails. And this shouldn't and won't be allowed to happen in the Dashboard 2.0.
+
+So based on this [talk](https://talk.openmrs.org/t/migration-accounts-with-the-same-email-address/407), I've adopted such strategy.
+
+For duplicate emails,
+
++ Remove all nonprimary emails.
++ Users with duplicate primary email will be skipped, and stored in `skipped-users.json'.
+
+Except from those, all info will be migrated into mongo.
+
 That's all.
