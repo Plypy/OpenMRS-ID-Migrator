@@ -31,6 +31,9 @@ var store = function (groupInfo) {
   var ret = {};
   ret.name = groupInfo.groupName;
   ret.member = {};
+  if (!_.isArray(groupInfo.member)) {
+    groupInfo.member = [groupInfo.member];
+  }
   _.forEach(groupInfo.member, function (data) {
     ret.member[extract(data)] = true;
   });
