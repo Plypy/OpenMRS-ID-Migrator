@@ -64,6 +64,7 @@ var addGroups = function(next) {
   });
 };
 
+var deletedEmails = [];
 var checkUsers = function (next) {
   var count = {};
   var addToMap = function (mail) {
@@ -97,8 +98,10 @@ var checkUsers = function (next) {
       }
       user.emailList.splice(i,1);
       console.log('Deleteing duplicated nonprimary email ' + mail + ' for user ' + user.username);
+      deletedEmails.push(mail);
     }
   });
+  deletedEmails = _.unique(deletedEmails);
 
   // recount and mark users with duplicated primaryEmail
   count = {};
@@ -140,14 +143,13 @@ var addUsers = function (next) {
       console.error(err);
       process.exit();
     }
-    if (!_.isEmpty(skipped)) {
-      var skipObj = {
-        skipped: skipped,
-      };
-      var data = JSON.stringify(skipObj, null, 4);
-      fs.writeFileSync('skipped-users.json', data);
-      console.log('Stored skipped users to "skipped-users.json"');
-    }
+    var skipObj = {
+      skippedUsers: skipped,
+      deletedEmails: deletedEmails,
+    };
+    var data = JSON.stringify(skipObj, null, 4);
+    fs.writeFileSync('skipped.json', data);
+    console.log('Stored skipped users and deleted emails to "skipped.json"');
     console.log('successfully synced all users');
     return next();
   });

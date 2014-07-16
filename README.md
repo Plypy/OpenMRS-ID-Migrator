@@ -51,6 +51,16 @@ Then you'd better delete this.
     cd ..
     rm -rf Migrator
 
+#### Verify the Migration
+
+To verify whether the data was correctly migrated to mongo, run this command,
+
+    node verify.js
+
+Ignore the log message coming from ldap. If everything was alright, you shall see `All data was successfully and correctly migrated`.
+
+And if something was wrong, I hope not, the verifier will report.
+
 # Strategy to Erase Duplicate Emails
 
 For some reasons, there are some old accounts with duplicate emails. And this shouldn't and won't be allowed to happen in the Dashboard 2.0.
@@ -60,7 +70,8 @@ So based on this [talk](https://talk.openmrs.org/t/migration-accounts-with-the-s
 For duplicate emails,
 
 + Remove all nonprimary emails.
-+ Users with duplicate primary email will be skipped, and stored in `skipped-users.json'.
++ Users with duplicate primary email will be skipped.
++ Removed emails and skipped users will be stored in 'skipped.json', if there is any.
 
 Except from those, all info will be migrated into mongo.
 
