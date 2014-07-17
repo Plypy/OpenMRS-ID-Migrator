@@ -41,14 +41,17 @@ var check = function(expected, real) {
   ar.sort();
   br.sort();
   if (ar.length !== br.length) {
-    return false;
+    tmp = false;
   }
   for (var i = 0; i < ar.length; ++i) {
     if (ar[i] !== br[i]) {
-      return false;
+      tmp = false;
     }
   }
-  return true;
+  if (!tmp) {
+    console.log('expected emailList', ar, 'real emailList', br);
+  }
+  return tmp;
 };
 
 var verifier = function (user, callback) {
