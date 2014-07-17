@@ -17,17 +17,17 @@ parser(MAP, function (err, rawUsers) {
     process.exit();
   }
   _.each(rawUsers.objList, function (user) {
-    if (!_.isArray(user.otherMailbox)) {
-      if (_.isUndefined(user.otherMailbox)) {
-        user.otherMailbox = [];
+    if (!_.isArray(user.secondaryEmail)) {
+      if (_.isUndefined(user.secondaryEmail)) {
+        user.secondaryEmail = [];
       } else {
-        user.otherMailbox = [user.otherMailbox];
+        user.secondaryEmail = [user.secondaryEmail];
       }
     }
-    user.emailList = user.otherMailbox;
+    user.emailList = user.secondaryEmail;
     user.emailList.push(user.primaryEmail);
     user.emailList = _.unique(user.emailList);
-    delete user.otherMailbox;
+    delete user.secondaryEmail;
   });
   var cooked = JSON.stringify(rawUsers, null, 4);
   console.log(cooked);
