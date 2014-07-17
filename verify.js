@@ -55,6 +55,9 @@ var verifyUser = function (username, callback) {
     // console.log('filtering', user);
     for (var i = user.emailList.length-1; i>=0; --i) {
       var mail = user.emailList[i];
+      if (mail === user.primaryEmail) {
+        continue;
+      }
       if (-1 !== _.indexOf(deletedEmails, mail)) {
         user.emailList.splice(i,1);
       }
