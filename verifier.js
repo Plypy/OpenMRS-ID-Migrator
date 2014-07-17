@@ -24,8 +24,13 @@ var check = function(expected, real) {
     'primaryEmail',
     'password',
   ];
-  var tmp = _.every(testList, function (field) {
-    return expected[field] === real[field];
+  var tmp = true;
+  _.each(testList, function (field) {
+    if (expected[field] !== real[field]) {
+      console.log(real.username, ' wrong in ', field);
+      console.log('expected', expected.field, 'real', real.field);
+      tmp = false;
+    }
   });
   if (!tmp) {
     return false;
