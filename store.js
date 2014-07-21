@@ -5,6 +5,7 @@ var fs = require('fs');
 
 require('../new-db');
 
+var log = require('../logger').add('storing');
 var Group = require('../model/group');
 var User = require('../model/user');
 var groupList = require('./groups.json').objList;
@@ -74,6 +75,7 @@ var checkUsers = function (next) {
       });
       return;
     }
+    mail = mail.toLowerCase();
     if (!count[mail]) {
       count[mail] = 1;
       return;
@@ -90,7 +92,8 @@ var checkUsers = function (next) {
   _.forEach(userList, function (user) {
     for (var i = user.emailList.length-1; i >= 0; --i) {
       var mail = user.emailList[i];
-      if (count[mail] === 1) {
+      var cp = mail.toLowerCase();
+      if (count[cp] === 1) {
         continue;
       }
       if (mail === user.primaryEmail) {
@@ -119,7 +122,8 @@ var checkUsers = function (next) {
 
 var skipped = [];
 var addUsers = function (next) {
-  async.map(userList, function (item, callback) {
+  async.mapSeries(userList, function (item, callback) {
+    console.log('Adding user ', item.username);
     var user = new User(item);
     if (item.duplicate) {
       console.log('Skipping user ' + item.username + ' for duplicated primaryEmail.');
@@ -135,6 +139,7 @@ var addUsers = function (next) {
     user.skipLDAP = true;
 
     var groups = getGroups(user.username);
+    log.debug('before calling save groups');
     user.addGroupsAndSave(groups,callback);
   },
   function (err) {

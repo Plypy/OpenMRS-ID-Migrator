@@ -1,6 +1,5 @@
 var async = require('async');
 var _ = require('lodash');
-var ldap = require('../ldap');
 
 var verifier = require('./verifier');
 
@@ -9,7 +8,33 @@ var skippedUsers = skipped.skippedUsers || [];
 var deletedEmails = skipped.deletedEmails || [];
 
 var userList = require('./users.json').objList;
+var groupList = require('./groups.json').objList;
 
+// preparation, adding groups to users
+var groupsTable = [];
+
+_.each(groupList, function (group) {
+  var tmp = {
+    groupName: group.groupName,
+    member: {},
+  };
+  _.each(group.member, function (user) {
+    tmp.member[user] = true;
+  });
+  groupsTable.push(tmp);
+});
+
+_.each(userList, function (user) {
+  var tmp = [];
+  _.each(groupsTable, function (group) {
+    if (group.member[user.username]) {
+      tmp.push(group.groupName);
+    }
+  });
+  user.groups = tmp;
+});
+
+// verifying
 var isSkipped = function (username) {
   for (var i = skippedUsers.length-1; i >= 0; --i) {
     if (skippedUsers[i].username === username) {
@@ -19,35 +44,22 @@ var isSkipped = function (username) {
   return false;
 };
 
-var verifyUser = function (username, callback) {
-  if (isSkipped(username)) {
+var verifyUser = function (user, callback) {
+  if (isSkipped(user.username)) {
     return callback();
   }
 
-  var findInLDAP = function (next) {
-    // console.log(username);
-    ldap.getUser(username, next);
-  };
-
   // convert from LDAP form to Mongo form
-  var convert = function (userobj, next) {
+  var convert = function (next) {
     // console.log('converting', userobj);
-    var user = {};
-    user.username = userobj.uid;
-    user.firstName = userobj.cn;
-    user.lastName = userobj.sn;
-    user.displayName = userobj.displayName;
-    user.primaryEmail = userobj.mail;
-    user.groups = userobj.memberof;
-    user.password = userobj.userPassword;
+    var ret = user;
+    ret.username = ret.username.toLowerCase();
+    ret.primaryEmail = ret.primaryEmail.toLowerCase();
 
-    var tmp = userobj.otherMailbox;
-    if (!_.isArray(tmp)) {
-      tmp = [tmp];
+    for (var i = 0, len = ret.emailList.length; i < len; ++i) {
+      ret.emailList[i] = ret.emailList[i].toLowerCase();
     }
-    tmp.push(userobj.mail);
-    user.emailList = tmp;
-    return next(null, user);
+    return next(null, ret);
   };
 
   // delete those deleted duplicate nonprimary emails
@@ -66,12 +78,10 @@ var verifyUser = function (username, callback) {
   };
 
   var verify = function (user, next) {
-    // console.log('verifing', user);
     verifier(user,next);
   };
 
   async.waterfall([
-    findInLDAP,
     convert,
     filter,
     verify,
@@ -79,9 +89,17 @@ var verifyUser = function (username, callback) {
 };
 
 var flag = true;
+var ct = 0;  // dots counter
+setInterval(function() {
+  process.stdout.clearLine();  // clear current text
+  process.stdout.cursorTo(0);  // move cursor to beginning of line
+  ct %= 40;
+  var dots = new Array(ct + 1).join(".");
+  process.stdout.write("Verifying" + dots);  // write text
+}, 300);
 async.eachSeries(userList, function (user, callback) {
-  var username = user.username;
-  verifyUser(username, function (err, state) {
+  ++ct;
+  verifyUser(user, function (err, state) {
     if (!state) {
       flag = false;
     }

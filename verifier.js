@@ -27,8 +27,8 @@ var check = function(expected, real) {
   var tmp = true;
   _.each(testList, function (field) {
     if (expected[field] !== real[field]) {
-      console.log(real.username, ' wrong in ', field);
-      console.log('expected', expected.field, 'real', real.field);
+      console.log(real.username, 'wrong in', field);
+      console.log('expected', expected[field], 'real', real[field]);
       tmp = false;
     }
   });
@@ -54,6 +54,7 @@ var check = function(expected, real) {
   return tmp;
 };
 
+var groupsFound = {};
 var verifier = function (user, callback) {
   var state = true;
   var basic = function (next) {
@@ -71,16 +72,30 @@ var verifier = function (user, callback) {
 
   var groupRelation = function (groups, next) {
     async.each(groups, function (groupName, cb) {
-      Group.findOne({groupName: groupName}, function (err, group) {
-        if (err) {
-          return cb(err);
+      async.waterfall([
+        function findGroup(nxt) {
+          if (groupsFound[groupName]) {
+            return nxt(null, groupsFound[groupName]);
+          }
+          Group.findOne({groupName: groupName}, function (err, group) {
+            if (err) {
+              return nxt(err);
+            }
+            if (_.isEmpty(group)) {
+              return nxt(new Error('No this group ' + groupName));
+            }
+            groupsFound[groupName] = group;
+            return nxt(null ,group);
+          });
+        },
+        function verify(group, nxt) {
+          if (-1 === indexOfUser(user.username, group)) {
+            console.error('group info migrated wrong for', user.username, 'and group', group.groupName);
+            state = false;
+          }
+          return nxt();
         }
-        if (-1 === indexOfUser(user.username, group)) {
-          console.error('group info migrated wrong for', user.username, 'and group', group.groupName);
-          state = false;
-        }
-        return cb();
-      });
+      ], cb);
     }, next);
   };
 

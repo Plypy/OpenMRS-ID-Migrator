@@ -28,6 +28,10 @@ parser(MAP, function (err, rawUsers) {
     user.emailList.push(user.primaryEmail);
     user.emailList = _.unique(user.emailList);
     delete user.secondaryEmail;
+
+    if (_.isUndefined(user.password)) {
+      user.password = '';
+    }
   });
   var cooked = JSON.stringify(rawUsers, null, 4);
   console.log(cooked);
