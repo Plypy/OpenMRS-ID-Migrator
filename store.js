@@ -1,5 +1,4 @@
 var async = require('async');
-var async = require('async');
 var _ = require('lodash');
 var fs = require('fs');
 

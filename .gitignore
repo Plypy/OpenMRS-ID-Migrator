@@ -1,7 +1,7 @@
 # Data Files #
 groups.json
 users.json
-skipped-users.json
+skipped.json
 
 # Logfiles #
 ############
