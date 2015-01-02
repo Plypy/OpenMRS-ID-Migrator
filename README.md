@@ -6,6 +6,7 @@ To use this, first you need to clone it under dashboard's folder. Check the 'Clo
 
 ---
 
+## OLD README
 These're simple scripts, I have only impemented converting via stdin/stdout.
 
 After you have Dashboard 2.0 installed, you may begin to migrate the data.
