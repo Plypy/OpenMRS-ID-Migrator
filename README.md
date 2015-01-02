@@ -4,6 +4,9 @@ This repo is originall designed for migrating Dashboard 1.0 data from OpenLDAP i
 
 To use this, first you need to clone it under dashboard's folder. Check the 'Clone and Install' sector of old WalkThrough below.
 
+## Tools
+`add-admin.js`, Adding users into admin(or other) groups programmatically.
+
 ---
 
 ## OLD README
@@ -18,7 +21,7 @@ Suppose you have Dashboard 2.0 installed under `path`, then
 
 First ensure you have `node` specified, by this
 
-    nvm use [same version with the dashboard]
+    nvm use [same version as the dashboard]
 
 Then,
 
