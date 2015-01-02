@@ -1,3 +1,10 @@
+---
+## NEW README
+This repo is originall designed for migrating Dashboard 1.0 data from OpenLDAP into MongoDB of 2.0. So is the derivation of the name of this repo. However it also includes other scripts that helps you work on Dashboard.
+
+To use this, first you need to clone it under dashboard's folder. Check the 'Clone and Install' sector of old WalkThrough below.
+---
+
 These're simple scripts, I have only impemented converting via stdin/stdout.
 
 After you have Dashboard 2.0 installed, you may begin to migrate the data.
@@ -9,7 +16,7 @@ Suppose you have Dashboard 2.0 installed under `path`, then
 
 First ensure you have `node` specified, by this
 
-    nvm use 0.8
+    nvm use [same version with the dashboard]
 
 Then,
 
