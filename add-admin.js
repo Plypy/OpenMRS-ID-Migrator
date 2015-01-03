@@ -10,8 +10,6 @@ var data = require('./add-admin.json');
 var userList = data.userList;
 var groupName = data.groupName;
 
-console.log(data);
-
 // plain-validation
 if (_.isUndefined(data) || _.isUndefined(userList) || _.isUndefined(groupName)) {
   console.error('Please check add-admin.json!');
