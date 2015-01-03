@@ -6,9 +6,7 @@ To use that, first you need create a `add-admin.json` in this folder, which goes
     "userList": [
         "plypy"
     ],
-    "groupName": [
-        "dashboard-administrators"
-    ]
+    "groupName": "dashboard-administrators"
 }
 ```
 
