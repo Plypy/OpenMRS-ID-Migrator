@@ -1,10 +1,11 @@
+'use strict';
 var async = require('async');
 var _ = require('lodash');
 
 require('../new-db');
 
-var Group = require('../model/group');
-var User = require('../model/user');
+var Group = require('../models/group');
+var User = require('../models/user');
 var data = require('./add-admin.json');
 
 var userList = data.userList;

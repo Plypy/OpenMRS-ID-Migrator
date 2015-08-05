@@ -1,3 +1,4 @@
+'use strict'
 var parser = require('./parser');
 var _ = require('lodash');
 

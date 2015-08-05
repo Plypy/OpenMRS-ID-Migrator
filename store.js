@@ -1,24 +1,26 @@
+'use strict';
 var async = require('async');
 var _ = require('lodash');
 var fs = require('fs');
 
 require('../new-db');
+require('../logger');
 
-var log = require('../logger').add('storing');
-var Group = require('../model/group');
-var User = require('../model/user');
+var log = require('log4js').addLogger('storing');
+var Group = require('../models/group');
+var User = require('../models/user');
 var groupList = require('./groups.json').objList;
 var userList = require('./users.json').objList;
 // store groupnames and its member names to query
 var groups = [];
 
 if (_.isUndefined(groupList)) {
-  console.error('Cannot find groups.json!');
+  log.error('Cannot find groups.json!');
   process.exit();
 }
 
 if (_.isUndefined(userList)) {
-  console.error('Cannot find users.json!');
+  log.error('Cannot find users.json!');
   process.exit();
 }
 
@@ -44,7 +46,7 @@ var getGroups = function (username) {
 };
 
 var addGroups = function(next) {
-  console.log('\n##################################  Starting to sync\n');
+  log.info('\n##################################  Starting to sync\n');
   async.map(groupList, function (item, callback) {
     var groupInfo = _.cloneDeep(item);
     groups.push(store(groupInfo));
@@ -55,11 +57,11 @@ var addGroups = function(next) {
   },
   function (err) {
     if (err) {
-      console.error('screwed');
-      console.error(err);
+      log.error('screwed');
+      log.error(err);
       process.exit();
     }
-    console.log('successfully synced all groups');
+    log.info('successfully synced all groups');
     return next();
   });
 };
@@ -99,7 +101,8 @@ var checkUsers = function (next) {
         continue;
       }
       user.emailList.splice(i,1);
-      console.log('Deleteing duplicated nonprimary email ' + mail + ' for user ' + user.username);
+      log.warn('Deleteing duplicated nonprimary email ' + mail +
+        ' for user ' + user.username);
       deletedEmails.push(mail);
     }
   });
@@ -122,10 +125,10 @@ var checkUsers = function (next) {
 var skipped = [];
 var addUsers = function (next) {
   async.mapSeries(userList, function (item, callback) {
-    console.log('Adding user ', item.username);
+    log.info('Adding user ', item.username);
     var user = new User(item);
     if (item.duplicate) {
-      console.log('Skipping user ' + item.username + ' for duplicated primaryEmail.');
+      log.warn('Skipping user ' + item.username + ' for duplicated primaryEmail.');
       var copy = _.cloneDeep(item);
       delete copy.duplicate;
       copy.groups = getGroups(user.username);
@@ -143,8 +146,8 @@ var addUsers = function (next) {
   },
   function (err) {
     if (err) {
-      console.error('screwed');
-      console.error(err);
+      log.error('screwed');
+      log.error(err);
       process.exit();
     }
     var skipObj = {
@@ -153,8 +156,8 @@ var addUsers = function (next) {
     };
     var data = JSON.stringify(skipObj, null, 4);
     fs.writeFileSync('skipped.json', data);
-    console.log('Stored skipped users and deleted emails to "skipped.json"');
-    console.log('successfully synced all users');
+    log.info('Stored skipped users and deleted emails to "skipped.json"');
+    log.info('successfully synced all users');
     return next();
   });
 };

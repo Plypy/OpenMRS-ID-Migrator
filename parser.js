@@ -1,3 +1,4 @@
+'use strict';
 var readline = require('readline');
 var _ = require('lodash');
 

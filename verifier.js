@@ -1,9 +1,13 @@
+'use strict';
 var async = require('async');
 var _ = require('lodash');
 
-var Group = require('../model/group');
-var User = require('../model/user');
+// patch
+require('../logger');
 require('../new-db');
+
+var Group = require('../models/group');
+var User = require('../models/user');
 
 var indexOfUser = function (username, group) {
   for (var i = group.member.length-1; i >= 0; --i) {
